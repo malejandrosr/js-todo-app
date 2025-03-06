@@ -37,13 +37,13 @@
         <!-- Remove this if you don't implement routing -->
         <ul class="filters">
             <li>
-                <a class="selected filtro" class="selected" href="#/">Todos</a>
+                <a data-filter="all" class="selected filter" class="selected" href="#/">Todos</a>
             </li>
             <li>
-                <a class="filtro" href="#/active">Pendientes</a>
+                <a data-filter="pending" class="filter" href="#/pending">Pendientes</a>
             </li>
             <li>
-                <a class="filtro" href="#/completed">Completados</a>
+                <a data-filter="completed" class="filter" href="#/completed">Completados</a>
             </li>
         </ul>
         <!-- Hidden if no completed items are left ↓ -->

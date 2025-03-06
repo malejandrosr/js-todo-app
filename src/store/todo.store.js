@@ -11,7 +11,7 @@ import { Todo } from "../todos/models/todo.model";
  * Filters for the todo list
  * @type {Filters}
  */
-const Filters = {
+export const Filters = {
     all: "all",
     pending: "pending",
     completed: "completed",
@@ -49,7 +49,7 @@ const state = {
  * @author M. Alejandro Salgado Ramírez <alejandrosram@outlook.com>
  */
 const initStore = () => {
-    console.log(state);
+    loadStore();
     console.log("Store initialized");
 };
 
@@ -59,7 +59,27 @@ const initStore = () => {
  * @author M. Alejandro Salgado Ramírez <alejandrosram@outlook.com>
  */
 const loadStore = () => {
-    throw new Error("Not implemented");
+    const storedState = localStorage.getItem("state");
+
+    if (!storedState) {
+        return;
+    }
+
+    const { todos = [], filter = Filters.all } = JSON.parse(storedState);
+
+    state.todos = todos;
+    state.filter = filter;
+
+    console.log("Store loaded");
+};
+
+/**
+ * Save the state to local storage
+ * @returns void
+ * @author M. Alejandro Salgado Ramírez <alejandrosram@outlook.com>
+ */
+const saveState = () => {
+    localStorage.setItem("state", JSON.stringify(state));
 };
 
 /**
@@ -95,6 +115,8 @@ const addTodo = (description) => {
     }
 
     state.todos.push(new Todo(description));
+
+    saveState();
 };
 
 /**
@@ -111,6 +133,8 @@ const toggleTodo = (uuid) => {
 
         return todo;
     });
+
+    saveState();
 };
 
 /**
@@ -121,6 +145,8 @@ const toggleTodo = (uuid) => {
  */
 const deleteTodo = (uuid) => {
     state.todos = state.todos.filter((todo) => todo.id !== uuid);
+
+    saveState();
 };
 
 /**
@@ -130,6 +156,8 @@ const deleteTodo = (uuid) => {
  */
 const deleteCompleted = () => {
     state.todos = state.todos.filter((todo) => !todo.done);
+
+    saveState();
 };
 
 /**
@@ -145,6 +173,8 @@ const setFilter = (filter = Filters.all) => {
     }
 
     state.filter = filter;
+
+    saveState();
 };
 
 /**

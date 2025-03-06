@@ -1,4 +1,4 @@
-import todoStore from "../store/todo.store";
+import todoStore, { Filters } from "../store/todo.store";
 import { renderTodos } from "./use-cases";
 
 import html from "./app.html?raw";
@@ -7,6 +7,9 @@ import html from "./app.html?raw";
  * Element IDs Object
  * @typedef {Object} ElementIds
  * @property {String} todoList
+ * @property {String} newTodo
+ * @property {String} clearCompleted
+ * @property {String} filter
  */
 /**
  * Element IDs
@@ -15,6 +18,8 @@ import html from "./app.html?raw";
 const ElementIds = {
     todoList: ".todo-list",
     newTodo: ".new-todo",
+    clearCompleted: ".clear-completed",
+    filter: ".filter",
 };
 
 /**
@@ -30,6 +35,10 @@ export const App = (elementId) => {
         renderTodos(ElementIds.todoList, todos);
     };
 
+    const updateTodoCount = () => {
+
+    };
+
     (() => {
         const app = document.createElement("div");
 
@@ -42,6 +51,9 @@ export const App = (elementId) => {
 
     // Refs
     const newTodoInput = document.querySelector(ElementIds.newTodo);
+    const todoListUl = document.querySelector(ElementIds.todoList);
+    const clearCompletedButton = document.querySelector(ElementIds.clearCompleted);
+    const filtersLi = document.querySelectorAll(ElementIds.filter);
 
     // Listeners
     /**
@@ -50,20 +62,98 @@ export const App = (elementId) => {
      * @listens keyup
      */
     const newTodoInputListener = (event) => {
-        console.log(event.keyCode);
-        // const { , target } = event;
+        const { key, target } = event;
+        if (key !== 'Enter') {
+            return;
+        }
 
-        // if (keyCode !== 13) {
-        //     return;
-        // }
+        const { value } = target;
+        if (value.trim().length === 0) {
+            return;
+        }
 
-        // const { value } = target;
+        todoStore.addTodo(value);
 
-        // if (value.trim().length === 0) {
-        //     return;
-        // }
+        displayTodos();
 
-        // todoStore.addTodo(value);
+        target.value = "";
     };
     newTodoInput.addEventListener("keyup", newTodoInputListener);
+
+    /**
+     * Todo List Listener
+     * @param {MouseEvent} event - The mouse event object.
+     * @listens click
+     */
+    const todoListListener = (event) => {
+        const { target } = event;
+
+        const element = target.closest("[data-id]");
+
+        todoStore.toggleTodo(element.dataset.id);
+
+        displayTodos();
+    };
+    todoListUl.addEventListener("click", todoListListener);
+
+    /**
+     * Todo List Listener
+     * @param {MouseEvent} event - The mouse event object.
+     * @listens click
+     */
+    const todoListRemoveListener = (event) => {
+        const { target } = event;
+
+        const isDestroyButton = target.classList.contains("destroy");
+        const element = target.closest("[data-id]");
+
+        if (!isDestroyButton || !element) {
+            return;
+        }
+
+        todoStore.deleteTodo(element.dataset.id);
+
+        displayTodos();
+    };
+    todoListUl.addEventListener("click", todoListRemoveListener);
+
+    /**
+     * Clear Completed Listener
+     * @param {MouseEvent} event - The mouse event object.
+     * @listens click
+     */
+    const clearCompletedListener = () => {
+        todoStore.deleteCompleted();
+
+        displayTodos();
+    };
+    clearCompletedButton.addEventListener("click", clearCompletedListener);
+
+    /**
+     * Filters Listener
+     * @param {MouseEvent} event - The mouse event object.
+     * @listens click
+     */
+    const filtersListener = (event) => {
+        filtersLi.forEach((filter) => filter.classList.remove("selected"));
+
+        const { target } = event;
+
+        target.classList.add("selected");
+
+        switch (target.dataset.filter) {
+            case "all":
+                todoStore.setFilter(Filters.all);
+                break;
+            case "pending":
+                todoStore.setFilter(Filters.pending);
+                break;
+            case "completed":
+                todoStore.setFilter(Filters.completed);
+                break;
+        }
+
+        displayTodos();
+    };
+    filtersLi.forEach((filter) => filter.addEventListener("click", filtersListener));
 };
